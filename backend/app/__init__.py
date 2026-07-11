@@ -1,0 +1,2 @@
+"""CyboPal backend application package."""
+

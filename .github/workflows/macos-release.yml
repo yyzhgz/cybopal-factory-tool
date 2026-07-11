@@ -1,0 +1,66 @@
+name: macOS App Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_mode:
+        description: "Build mode"
+        required: true
+        default: "development"
+        type: choice
+        options:
+          - development
+          - signed
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    env:
+      CYBOPAL_SSH_MOCK: "true"
+      MAC_CODE_SIGN_IDENTITY: ${{ secrets.MAC_CODE_SIGN_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Validate signed release secrets
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release_mode == 'signed' && env.MAC_CODE_SIGN_IDENTITY == '' }}
+        run: |
+          echo "Signed release mode was requested, but MAC_CODE_SIGN_IDENTITY is not configured."
+          exit 1
+
+      - name: Prepare optional signing certificate
+        if: ${{ env.MAC_CODE_SIGN_IDENTITY != '' }}
+        run: |
+          echo "Signing identity is configured. electron-builder will use it."
+          echo "Add certificate import here when Apple Developer credentials are available."
+
+      - name: Build macOS app
+        run: bash scripts/build-macos-app.sh
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CyboPal-Factory-Tool-macOS
+          path: frontend/release/*.dmg
+          if-no-files-found: error
