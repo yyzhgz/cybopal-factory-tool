@@ -23,7 +23,6 @@ function createWindow() {
     minHeight: 720,
     title: 'CyboPal Factory Tool',
     backgroundColor: '#f6f4f0',
-    titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -159,4 +158,3 @@ app.on('activate', () => {
 app.on('before-quit', () => {
   stopBackend()
 })
-

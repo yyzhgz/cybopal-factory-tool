@@ -1,12 +1,6 @@
 <template>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="window-dots" aria-hidden="true">
-        <span class="dot red" />
-        <span class="dot yellow" />
-        <span class="dot green" />
-      </div>
-
       <div class="brand">
         <div class="brand-mark">CP</div>
         <div>
